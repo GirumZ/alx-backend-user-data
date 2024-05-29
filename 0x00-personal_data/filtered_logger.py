@@ -78,7 +78,8 @@ def main():
     cursor.execute("SELECT * FROM users;")
     fields = cursor.column_names
     for row in cursor:
-        message = "".join("{}={}; ".format(key, value) for key, value in zip(fields, row))
+        message = "".join("{}={}; ".format(key, value) for key,
+                          value in zip(fields, row))
         logger.info(message.strip())
     cursor.close()
     db.close()
