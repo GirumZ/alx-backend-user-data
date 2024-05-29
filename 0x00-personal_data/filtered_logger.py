@@ -15,8 +15,10 @@ def filter_datum(fields: List[str], redaction: str, message: str,
                  separator: str) -> str:
     """ Returns the a log message obfuscated"""
 
-    to_match = f"({'|'.join(fields)})=([^\\{separator}]*)"
-    return re.sub(to_match, lambda m: f" {m.group(1)}={redaction}", message)
+    for field in fields:
+        message = re.sub(field+'=.*?'+separator,
+                         field+'='+redaction+separator, message)
+    return message
 
 
 class RedactingFormatter(logging.Formatter):
