@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """DB module
 """
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, tuple_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import InvalidRequestError
 
-from user import Base
-from user import User
+from user import Base, User
 
 
 class DB:
@@ -42,3 +43,22 @@ class DB:
             self._session.rollback()
             new_user = None
         return new_user
+
+    def find_user_by(self, **kwargs) -> User:
+        """ Finds and returns the first instance of the searched user"""
+
+        fields = []
+        values = []
+
+        for key, value in kwargs.items():
+            if hasattr(User, key):
+                fields.append(getattr(User, key))
+                values.append(value)
+            else:
+                raise InvalidRequestError()
+        first_row = self._session.query(User).filter(
+                tuple_(*fields).in_([tuple(values)])
+                ).first()
+        if first_row is None:
+            raise NoResultFound()
+        return first_row
